@@ -18,7 +18,7 @@ class Application extends Controller {
 
   def isPrime(n: Int) = {
     val divisors: Seq[Int] = for {
-      i <- (1 to n) if n % i == 0
+      i <- 1 to n if n % i == 0
     } yield i
 
     if (divisors.size == 2 && divisors(1) == n) true
@@ -37,7 +37,7 @@ class Application extends Controller {
   }
 
 
-  def index(q: String) = Action {
+  def index(q: String) = {
     println(q)
 
     val q1 = """[\w\s:]+ largest: ([\d\s,]+)""".r
@@ -47,64 +47,54 @@ class Application extends Controller {
     val q5 = """[\w\s:]+ are primes: ([\d\s,]+)""".r
     val q6 = """[\w]+: what colour is a ([\w]+)""".r
     val q7 = """[\w]+: what currency did ([\w]+) use before the Euro""".r
-    val q8 = """[\w]+: who played James Bond in the film Dr No""".r
-    val q9 = """[\w]+: which city is the Eiffel tower in""".r
-    val q10 = """[\w]+: who is the Prime Minister of Great Britain""".r
+    val q8 = """[\w\s:]+ played ([\w\s]+) in the film Dr No""".r
+    val q9 = """[\w]+: which city is the ([\w\s]+) in""".r
+    val q10 = """[\w]+: who is the ([\w\s]+) of ([\w\s]+)""".r
     val q11 = """\w+: what is the (\d+)(?:st|th|nd) number in the Fibonacci sequence""".r
     val q12 = """[\w\s:]+ ([\d]+) minus ([\d]+)""".r
 
-    var response = "Not answered!"
-
-    if (q.matches(q1.toString())) {
-      response = q1.findAllIn(q).matchData.map(m => m.group(1)).next().split(",").map(e => e.trim.toInt).max.toString
-    } else if (q.matches(q2.toString())) {
-      response = q2.findAllIn(q).matchData.map(m => m.group(1).toInt + m.group(2).toInt).next().toString
-    } else if (q.matches(q3.toString)) {
-      response = q3.findAllIn(q).matchData.map(m => m.group(1).toInt * m.group(2).toInt).next().toString
-    } else if (q.matches(q4.toString)) {
-      val elems = q4.findAllIn(q).matchData.map {
-        m => m.group(1).trim().split(",")
-      }.next().map(e => e.trim().toInt)
-
-      val res = elems.filter(isSquare).filter(isCube)
-      response = if (res.size > 0) res(0).toString else ""
-
-    } else if (q.matches(q5.toString())) {
-      val elems = q5.findAllIn(q).matchData.map {
-        m => m.group(1).trim().split(",")
-      }.next().map(e => e.trim().toInt)
-
-      val res = elems.filter(isPrime)
-      response = if (res.size > 0) res.mkString(", ") else ""
-    } else if (q.matches(q6.toString())) {
-
-      val word: String = q6.findAllIn(q).matchData.map {
-        m => m.group(1)
-      }.next()
-
-      response = if (word == "banana") "yellow" else ""
-    } else if (q.matches(q7.toString())) {
-      val country: String = q7.findAllIn(q).matchData.map(m => m.group(1)).next()
-
-      response = if (country == "Spain") "Peseta" else ""
-    } else if (q.matches(q8.toString())) {
-      response = "Sean Connery"
-    } else if (q.matches(q9.toString())) {
-      response = "Paris"
-    } else if (q.matches(q10.toString())) {
-      response = "David Cameron"
-    } else if (q.matches(q11.toString())) {
-
-      val elems = q11.findAllIn(q).matchData.map {
-        m => m.group(1).trim().split(",")
-      }.next().map(e => e.trim().toInt)
-
-      response = fibSeq(elems(0)).last.toString
-    } else if (q.matches(q12.toString())) {
-      response = q12.findAllIn(q).matchData.map(m => m.group(1).toInt - m.group(2).toInt).next().toString
+    val response = q match {
+      case q1(numbers) => numbers.split(",").map(_.trim().toInt).max
+      case q2(num1, num2) => (num1.toInt + num2.toInt).toString
+      case q3(num1, num2) => (num1.toInt * num2.toInt).toString
+      case q4(numbers) => {
+        val res: Array[Int] = numbers.split(",").map(_.trim().toInt).filter(isSquare).filter(isCube)
+        if (res.length > 0) res(0).toString else ""
+      }
+      case q5(numbers) => {
+        val res: Array[Int] = numbers.split(",").map(_.trim().toInt).filter(isPrime)
+        if (res.length > 0) res.mkString(",").toString else ""
+      }
+      case q6(fruit) => if (fruit == "banana") "yellow" else ""
+      case q7(country) => if (country.toLowerCase == "Spain".toLowerCase) "Peseta" else ""
+      case q8(actorName) => s"$actorName played Sean Connery"
+      case q9(monument) => if (monument.toLowerCase == "eiffel tower") "Paris" else ""
+      case q10(role, countryName) => if (role.toLowerCase == "prime minister" && countryName.toLowerCase == "great britan") "David Cameron" else ""
+      case q11(num) => fibSeq(num.toInt).last.toString
+      case q12(num1, num2) => (num1.toInt - num2.toInt).toString
+      case _ => "Not answered"
     }
 
-    Ok(response)
+    response
+
+//    Ok(response)
   }
 
+}
+
+object Application extends App {
+  val app = new Application
+//  val q = "f8fed360: what is the largest: 1, 4, 0, 100, 50"
+//  val q = "f8fed360: how much is 1 plus 10"
+//  val q = "f8fed360: how much is 2 multiplied by 10"
+//  val q = "f8fed360: what number is a square and a cube: 9, 64, 100, 120, 6472"
+//  val q = "f8fed360: what number are primes: 9, 64, 1, 7, 11, 19"
+//  val q = "f8fed360: what colour is a banana"
+//  val q = "f8fed360: what currency did Spain use before the Euro"
+//  val q = "f8fed360: who played James Bond in the film Dr No"
+//  val q = "f8fed360: which city is the Eiffel Tower in"
+//  val q = "f8fed360: who is the Prime Minister of Great Britan"
+  val q = "f8fed360: what is the 14th number in the Fibonacci sequence"
+//    val q = "f8fed360: how much is 15 minus 10"
+  println(app.index(q))
 }
