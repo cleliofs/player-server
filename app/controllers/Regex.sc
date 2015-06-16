@@ -1,7 +1,7 @@
 import scala.annotation.tailrec
 
-
-val p1 = """[\w]+: what is the (\d+)(?:st|nd|th) number in the Fibonacci sequence""".r
+val q = "3561b300: what is the 10th number in the Fibonacci sequence"
+val p1 = """[\w]+: what is the ([\d]+)(?:st|nd|th) number in the Fibonacci sequence""".r
 p1.findAllIn(q).groupCount
 q.matches(p1.toString())
 Seq(1,2,3,4,5).takeRight(2)
@@ -45,8 +45,6 @@ def fibSeq(max: Int): Seq[Int] = {
 
 
 
-val q = "f8fed360: what is the 21st number in the Fibonacci sequence"
-
 
 val q1 = """[\w\s:]+ largest: ([\d\s,]+)""".r
 val q2 = """[\w\s:]+ ([\d]+) plus ([\d]+)""".r
@@ -60,7 +58,6 @@ val q9 = """[\w]+: which city is the Eiffel tower in""".r
 val q10 = """[\w]+: who is the Prime Minister of Great Britain""".r
 val q11 = """\w+: what is the (\d+)(?:st|th|nd) number in the Fibonacci sequence""".r
 val q12 = """[\w\s:]+ ([\d]+) minus ([\d]+)""".r
-
 val response = q match {
   case q1(numbers) => numbers.split(",").map(_.trim().toInt).max
   case q2(num1, num2) => (num1.toInt + num2.toInt).toString
